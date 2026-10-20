@@ -134,7 +134,18 @@ class NewNote(BaseModel):
 def get_current_user(token: str = Depends(oauth2)):
     username = read_token(token)
     row = db.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
-    # TODO: if username is None -> 401 ; if row is None -> 401
+    if username is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if row is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     return row
 # <<< END TASK 3
 
