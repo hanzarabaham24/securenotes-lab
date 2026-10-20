@@ -151,7 +151,8 @@ def get_current_user(token: str = Depends(oauth2)):
 
 
 def require_admin(user=Depends(get_current_user)):
-    # TASK 5 will make this real.
+    if not user["is_admin"]:
+        raise HTTPException(status_code=403, detail="Admin only")
     return user
 
 
@@ -204,11 +205,11 @@ def create_note(note: NewNote, user=Depends(get_current_user)):
     return {"id": cur.lastrowid, "title": note.title}
 
 @app.get("/admin/users")
-def list_all_users(user=Depends(get_current_user)):
+def list_all_users(user=Depends(require_admin)):
     # >>> TASK 5 — Role check (A01 Broken Access Control)
     # Only admins may see this. Make it require the admin role (use require_admin),
     # and return ONLY id, username, is_admin — never the password column.
-    rows = db.execute("SELECT * FROM users").fetchall()   # leaks password hashes!
+    rows = db.execute("SELECT id, username, is_admin FROM users").fetchall()
     return [dict(r) for r in rows]
     # <<< END TASK 5
 
