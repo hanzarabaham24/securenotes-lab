@@ -55,10 +55,10 @@ pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
 #   hash_password("alicepass")  should return a bcrypt hash
 #   verify_password(raw, hashed) should return True/False safely
 def hash_password(raw: str) -> str:
-    return raw                       # TODO: return pwd.hash(raw)
+    return pwd.hash(raw)
 
 def verify_password(raw: str, hashed: str) -> bool:
-    return raw == hashed             # TODO: return pwd.verify(raw, hashed)
+    return pwd.verify(raw, hashed)
 # <<< END TASK 1
 
 
@@ -67,10 +67,18 @@ def verify_password(raw: str, hashed: str) -> bool:
 # JWT that carries the username in 'sub' and expires in TOKEN_MINUTES. Make
 # read_token decode it and return the username, or None if bad/expired.
 def create_token(username: str) -> str:
-    return username                  # TODO: build + sign a JWT (sub, exp)
+    payload = {
+        "sub": username,
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=TOKEN_MINUTES),
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 def read_token(token: str):
-    return token                     # TODO: jwt.decode(...); return sub, or None on JWTError
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload.get("sub")
+    except JWTError:
+        return None
 # <<< END TASK 2
 
 
